@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Journal - Interactive Feelings Wheel</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="Track your emotions with an interactive mood wheel and journal">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+    <!-- Hamburger Menu -->
+    <div class="hamburger-menu" id="hamburger">
+        <div class="hamburger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+    
+    <!-- Navigation Menu -->
+    <nav class="nav-menu" id="nav-menu">
+        <button class="nav-item" data-page="wheel">🎯 Mood Wheel</button>
+        <button class="nav-item" data-page="calendar">📅 Journal Calendar</button>
+    </nav>
+    
+    <div class="container">
+        <!-- Mood Wheel Page -->
+        <div id="wheel-page" class="page active">
+            <h1>Mood Journal</h1>
+            <p class="subtitle">How are you feeling right now?</p>
+            <div id="wheel-container">
+                <svg id="mood-wheel" viewBox="0 0 800 800"></svg>
+            </div>
+            <div id="selection-display">
+                <p id="selected-emotion"></p>
+            </div>
+            
+            <!-- Journal Entry Form -->
+            <div id="journal-form" class="hidden">
+                <h2 id="form-title">Add Journal Entry</h2>
+                <div class="emotion-path">
+                    <span id="entry-emotion-path"></span>
+                </div>
+                <div class="datetime-inputs">
+                    <div class="input-group">
+                        <label for="entry-date">Date:</label>
+                        <input type="date" id="entry-date" />
+                    </div>
+                    <div class="input-group">
+                        <label for="entry-time">Time:</label>
+                        <input type="time" id="entry-time" />
+                    </div>
+                </div>
+                <div class="formatting-toolbar">
+                    <button type="button" class="format-btn" data-format="bold" title="Bold"><strong>B</strong></button>
+                    <button type="button" class="format-btn" data-format="italic" title="Italic"><em>I</em></button>
+                    <button type="button" class="format-btn" data-format="underline" title="Underline"><u>U</u></button>
+                    <span class="toolbar-separator">|</span>
+                    <button type="button" class="format-btn" data-format="insertUnorderedList" title="Bullet List">• List</button>
+                    <button type="button" class="format-btn" data-format="insertOrderedList" title="Numbered List">1. List</button>
+                </div>
+                <div id="journal-note" contenteditable="true" class="editable-note" data-placeholder="How are you feeling? What's on your mind? (optional)"></div>
+                <div class="form-buttons">
+                    <button id="save-entry" class="btn btn-primary">Save Entry</button>
+                    <button id="cancel-entry" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Calendar Page -->
+        <div id="calendar-page" class="page">
+            <h1>Journal Calendar</h1>
+            <p class="subtitle">View and manage your mood entries</p>
+            
+            <div id="journal-history">
+                <div class="calendar-controls">
+                    <button id="prev-month" class="btn btn-nav">‹ Prev</button>
+                    <h3 id="current-month"></h3>
+                    <button id="next-month" class="btn btn-nav">Next ›</button>
+                </div>
+                <div id="calendar-container"></div>
+                <div class="history-controls">
+                    <button id="clear-history" class="btn btn-danger">Clear All Entries</button>
+                </div>
+                <div id="selected-date-entries">
+                    <div class="date-header">
+                        <h3 id="selected-date-title"></h3>
+                        <button id="add-entry-for-date" class="btn btn-add-entry hidden">+ Add Entry for This Day</button>
+                    </div>
+                    <div id="entries-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
