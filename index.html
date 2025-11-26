@@ -26,6 +26,8 @@
     <nav class="nav-menu" id="nav-menu">
         <button class="nav-item" data-page="wheel">🎯 Mood Wheel</button>
         <button class="nav-item" data-page="calendar">📅 Journal Calendar</button>
+        <button class="nav-item" data-page="insights">📊 Insights</button>
+        <button class="nav-item" data-page="settings">⚙️ Settings</button>
     </nav>
     
     <div class="container">
@@ -77,6 +79,26 @@
             <h1>Journal Calendar</h1>
             <p class="subtitle">View and manage your mood entries</p>
             
+            <!-- Search & Filter -->
+            <div class="search-filter-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search entries...">
+                    <button id="search-btn" class="btn btn-small">🔍</button>
+                </div>
+                <div class="filter-box">
+                    <select id="emotion-filter">
+                        <option value="">All Emotions</option>
+                        <option value="Happy">Happy</option>
+                        <option value="Sad">Sad</option>
+                        <option value="Angry">Angry</option>
+                        <option value="Fearful">Fearful</option>
+                        <option value="Disgusted">Disgusted</option>
+                        <option value="Bad">Bad</option>
+                        <option value="Surprised">Surprised</option>
+                    </select>
+                </div>
+            </div>
+            
             <div id="journal-history">
                 <div class="calendar-controls">
                     <button id="prev-month" class="btn btn-nav">‹ Prev</button>
@@ -96,7 +118,194 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Insights Page -->
+        <div id="insights-page" class="page">
+            <h1>Mood Insights</h1>
+            <p class="subtitle">Understand your emotional patterns</p>
+            
+            <div class="insights-container">
+                <!-- Streak Card -->
+                <div class="insight-card streak-card">
+                    <div class="streak-icon">🔥</div>
+                    <div class="streak-info">
+                        <span class="streak-number" id="current-streak">0</span>
+                        <span class="streak-label">Day Streak</span>
+                    </div>
+                    <div class="streak-best">
+                        Best: <span id="best-streak">0</span> days
+                    </div>
+                </div>
+                
+                <!-- Stats Overview -->
+                <div class="insight-card stats-overview">
+                    <h3>📈 Overview</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-number" id="total-entries">0</span>
+                            <span class="stat-label">Total Entries</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="this-week">0</span>
+                            <span class="stat-label">This Week</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="this-month">0</span>
+                            <span class="stat-label">This Month</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="avg-per-day">0</span>
+                            <span class="stat-label">Avg/Day</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Most Common Emotions -->
+                <div class="insight-card">
+                    <h3>💭 Most Common Emotions</h3>
+                    <div id="emotion-breakdown"></div>
+                </div>
+                
+                <!-- Mood Over Time Chart -->
+                <div class="insight-card">
+                    <h3>📅 Last 30 Days</h3>
+                    <div class="time-range-selector">
+                        <button class="time-btn active" data-range="7">7 Days</button>
+                        <button class="time-btn" data-range="14">14 Days</button>
+                        <button class="time-btn" data-range="30">30 Days</button>
+                    </div>
+                    <div id="mood-timeline"></div>
+                </div>
+                
+                <!-- Time of Day Analysis -->
+                <div class="insight-card">
+                    <h3>🕐 Most Active Times</h3>
+                    <div id="time-distribution"></div>
+                </div>
+                
+                <!-- Weekly Pattern -->
+                <div class="insight-card">
+                    <h3>📆 Weekly Pattern</h3>
+                    <div id="weekly-pattern"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Page -->
+        <div id="settings-page" class="page">
+            <h1>Settings</h1>
+            <p class="subtitle">Customize your experience</p>
+            
+            <div class="settings-container">
+                <!-- Appearance -->
+                <div class="settings-section">
+                    <h3>🎨 Appearance</h3>
+                    <div class="setting-item">
+                        <span class="setting-label">Dark Mode</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="dark-mode-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Reminders -->
+                <div class="settings-section">
+                    <h3>🔔 Daily Reminder</h3>
+                    <div class="setting-item">
+                        <span class="setting-label">Enable Reminder</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="reminder-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item" id="reminder-time-container">
+                        <span class="setting-label">Reminder Time</span>
+                        <input type="time" id="reminder-time" value="20:00">
+                    </div>
+                </div>
+                
+                <!-- Quick Entry -->
+                <div class="settings-section">
+                    <h3>⚡ Quick Entry</h3>
+                    <div class="setting-item">
+                        <span class="setting-label">Allow secondary emotion selection</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="quick-entry-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <p class="setting-description">When enabled, you can save entries at the secondary emotion level without selecting a tertiary emotion.</p>
+                </div>
+                
+                <!-- Data Management -->
+                <div class="settings-section">
+                    <h3>💾 Data Management</h3>
+                    <div class="data-buttons">
+                        <button id="export-data" class="btn btn-primary">📤 Export Data</button>
+                        <button id="import-data" class="btn btn-secondary">📥 Import Data</button>
+                        <input type="file" id="import-file" accept=".json" style="display: none;">
+                    </div>
+                    <div class="data-buttons" style="margin-top: 15px;">
+                        <button id="clear-all-data" class="btn btn-danger">🗑️ Clear All Data</button>
+                    </div>
+                </div>
+                
+                <!-- About -->
+                <div class="settings-section">
+                    <h3>ℹ️ About</h3>
+                    <div class="about-info">
+                        <p><strong>Mood Journal</strong></p>
+                        <p>Version 1.0.0</p>
+                        <p class="about-description">Track your emotions and gain insights into your mental well-being with an interactive feelings wheel based on psychological research.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    
+    <!-- Onboarding Modal -->
+    <div id="onboarding-modal" class="modal hidden">
+        <div class="modal-content onboarding">
+            <div class="onboarding-slide active" data-slide="1">
+                <div class="onboarding-icon">🎯</div>
+                <h2>Welcome to Mood Journal</h2>
+                <p>Track your emotions and understand your feelings better with our interactive mood wheel.</p>
+            </div>
+            <div class="onboarding-slide" data-slide="2">
+                <div class="onboarding-icon">🌈</div>
+                <h2>Explore Your Emotions</h2>
+                <p>Click on a core emotion, then drill down to more specific feelings. Each layer helps you identify exactly how you feel.</p>
+            </div>
+            <div class="onboarding-slide" data-slide="3">
+                <div class="onboarding-icon">📅</div>
+                <h2>Track Over Time</h2>
+                <p>View your mood history on the calendar. See patterns and gain insights into your emotional well-being.</p>
+            </div>
+            <div class="onboarding-slide" data-slide="4">
+                <div class="onboarding-icon">📊</div>
+                <h2>Gain Insights</h2>
+                <p>Discover trends, track your streaks, and understand your emotional patterns with detailed analytics.</p>
+            </div>
+            <div class="onboarding-nav">
+                <div class="onboarding-dots">
+                    <span class="dot active" data-slide="1"></span>
+                    <span class="dot" data-slide="2"></span>
+                    <span class="dot" data-slide="3"></span>
+                    <span class="dot" data-slide="4"></span>
+                </div>
+                <div class="onboarding-buttons">
+                    <button id="skip-onboarding" class="btn btn-secondary">Skip</button>
+                    <button id="next-onboarding" class="btn btn-primary">Next</button>
+                    <button id="finish-onboarding" class="btn btn-primary hidden">Get Started</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+    
     <script src="app.js"></script>
 </body>
 </html>

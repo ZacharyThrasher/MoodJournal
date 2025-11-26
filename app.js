@@ -210,20 +210,39 @@ let journalEntries = [];
 let editingEntryId = null;
 let currentCalendarDate = new Date();
 let selectedDate = null;
-let currentPage = 'wheel'; // 'wheel' or 'calendar'
+let currentPage = 'wheel'; // 'wheel', 'calendar', 'insights', 'settings'
+let settings = {
+    darkMode: false,
+    reminderEnabled: false,
+    reminderTime: '20:00',
+    quickEntryEnabled: false,
+    onboardingComplete: false,
+    bestStreak: 0
+};
+let currentOnboardingSlide = 1;
 
 // SVG namespace
 const svgNS = "http://www.w3.org/2000/svg";
 
 // Initialize the wheel
 function init() {
-    renderCoreEmotions();
+    loadSettings();
     loadJournalEntries();
+    applySettings();
+    renderCoreEmotions();
     renderCalendar();
     setupEventListeners();
     updateNavigation();
     registerServiceWorker();
     handleInstallPrompt();
+    
+    // Show onboarding if first time
+    if (!settings.onboardingComplete) {
+        showOnboarding();
+    }
+    
+    // Schedule reminder check
+    checkDailyReminder();
 }
 
 // PWA Support
@@ -284,9 +303,11 @@ function navigateToPage(page) {
     // Close menu
     document.getElementById('nav-menu').classList.remove('active');
     
-    // If navigating to calendar, re-render it
+    // Page-specific actions
     if (page === 'calendar') {
         renderCalendar();
+    } else if (page === 'insights') {
+        renderInsights();
     }
 }
 
@@ -338,6 +359,40 @@ function setupEventListeners() {
             document.execCommand(format, false, null);
             document.getElementById('journal-note').focus();
         });
+    });
+    
+    // Search & Filter
+    document.getElementById('search-btn').addEventListener('click', performSearch);
+    document.getElementById('search-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') performSearch();
+    });
+    document.getElementById('emotion-filter').addEventListener('change', performSearch);
+    
+    // Settings event listeners
+    document.getElementById('dark-mode-toggle').addEventListener('change', toggleDarkMode);
+    document.getElementById('reminder-toggle').addEventListener('change', toggleReminder);
+    document.getElementById('reminder-time').addEventListener('change', updateReminderTime);
+    document.getElementById('quick-entry-toggle').addEventListener('change', toggleQuickEntry);
+    document.getElementById('export-data').addEventListener('click', exportData);
+    document.getElementById('import-data').addEventListener('click', () => document.getElementById('import-file').click());
+    document.getElementById('import-file').addEventListener('change', importData);
+    document.getElementById('clear-all-data').addEventListener('click', clearAllData);
+    
+    // Time range buttons for insights
+    document.querySelectorAll('.time-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderMoodTimeline(parseInt(btn.dataset.range));
+        });
+    });
+    
+    // Onboarding
+    document.getElementById('next-onboarding').addEventListener('click', nextOnboardingSlide);
+    document.getElementById('skip-onboarding').addEventListener('click', finishOnboarding);
+    document.getElementById('finish-onboarding').addEventListener('click', finishOnboarding);
+    document.querySelectorAll('.onboarding-dots .dot').forEach(dot => {
+        dot.addEventListener('click', () => goToOnboardingSlide(parseInt(dot.dataset.slide)));
     });
 }
 
@@ -461,6 +516,15 @@ function renderSecondaryEmotions(coreEmotion) {
 // Handle secondary emotion click
 function handleSecondaryClick(coreEmotion, secondaryEmotion) {
     selectedSecondary = secondaryEmotion;
+    
+    // If quick entry is enabled, show form directly
+    if (settings.quickEntryEnabled) {
+        selectedTertiary = null;
+        updateSelectionDisplay(`${coreEmotion} → ${secondaryEmotion}`);
+        showJournalForm(coreEmotion, secondaryEmotion, null);
+        return;
+    }
+    
     currentView = 'tertiary';
     renderTertiaryEmotions(coreEmotion, secondaryEmotion);
     updateSelectionDisplay(`${coreEmotion} → ${secondaryEmotion}`);
@@ -650,11 +714,16 @@ function showJournalForm(coreEmotion, secondaryEmotion, tertiaryEmotion, entry =
     const dateInput = document.getElementById('entry-date');
     const timeInput = document.getElementById('entry-time');
     
+    // Build emotion path display
+    let pathText = coreEmotion;
+    if (secondaryEmotion) pathText += ` → ${secondaryEmotion}`;
+    if (tertiaryEmotion) pathText += ` → ${tertiaryEmotion}`;
+    
     if (entry) {
         // Edit mode
         editingEntryId = entry.id;
         formTitle.textContent = 'Edit Journal Entry';
-        emotionPath.textContent = `${entry.coreEmotion} → ${entry.secondaryEmotion} → ${entry.tertiaryEmotion}`;
+        emotionPath.textContent = pathText;
         noteDiv.innerHTML = entry.note || '';
         selectedCore = entry.coreEmotion;
         selectedSecondary = entry.secondaryEmotion;
@@ -668,7 +737,7 @@ function showJournalForm(coreEmotion, secondaryEmotion, tertiaryEmotion, entry =
         // New entry mode
         editingEntryId = null;
         formTitle.textContent = 'Add Journal Entry';
-        emotionPath.textContent = `${coreEmotion} → ${secondaryEmotion} → ${tertiaryEmotion}`;
+        emotionPath.textContent = pathText;
         noteDiv.innerHTML = '';
         
         // Check if there's a pending entry date from calendar
@@ -979,10 +1048,15 @@ function renderEntriesForDate(date) {
         
         const editedTag = entry.lastEdited ? ' <em>(edited)</em>' : '';
         
+        // Build emotion path
+        let emotionPath = entry.coreEmotion;
+        if (entry.secondaryEmotion) emotionPath += ` → ${entry.secondaryEmotion}`;
+        if (entry.tertiaryEmotion) emotionPath += ` → ${entry.tertiaryEmotion}`;
+        
         return `
             <div class="journal-entry">
                 <div class="entry-header">
-                    <div class="entry-emotion">${entry.coreEmotion} → ${entry.secondaryEmotion} → ${entry.tertiaryEmotion}</div>
+                    <div class="entry-emotion">${emotionPath}</div>
                     <div class="entry-timestamp">${formattedTime}${editedTag}</div>
                 </div>
                 ${entry.note ? `<div class="entry-note">${entry.note}</div>` : ''}
@@ -993,6 +1067,507 @@ function renderEntriesForDate(date) {
             </div>
         `;
     }).join('');
+}
+
+// Search & Filter functionality
+function performSearch() {
+    const searchTerm = document.getElementById('search-input').value.toLowerCase();
+    const emotionFilter = document.getElementById('emotion-filter').value;
+    
+    let filteredEntries = journalEntries;
+    
+    if (emotionFilter) {
+        filteredEntries = filteredEntries.filter(e => e.coreEmotion === emotionFilter);
+    }
+    
+    if (searchTerm) {
+        filteredEntries = filteredEntries.filter(e => {
+            const noteText = e.note ? e.note.toLowerCase().replace(/<[^>]*>/g, '') : '';
+            const emotions = `${e.coreEmotion} ${e.secondaryEmotion || ''} ${e.tertiaryEmotion || ''}`.toLowerCase();
+            return noteText.includes(searchTerm) || emotions.includes(searchTerm);
+        });
+    }
+    
+    renderSearchResults(filteredEntries);
+}
+
+function renderSearchResults(entries) {
+    const container = document.getElementById('entries-container');
+    const titleElement = document.getElementById('selected-date-title');
+    
+    titleElement.textContent = `Search Results (${entries.length} entries)`;
+    document.getElementById('add-entry-for-date').classList.add('hidden');
+    
+    if (entries.length === 0) {
+        container.innerHTML = '<div class="no-entries">No entries found matching your search.</div>';
+        return;
+    }
+    
+    container.innerHTML = entries.map(entry => {
+        const date = new Date(entry.timestamp);
+        const formattedDate = date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric',
+            year: 'numeric'
+        });
+        const formattedTime = date.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit' 
+        });
+        
+        let emotionPath = entry.coreEmotion;
+        if (entry.secondaryEmotion) emotionPath += ` → ${entry.secondaryEmotion}`;
+        if (entry.tertiaryEmotion) emotionPath += ` → ${entry.tertiaryEmotion}`;
+        
+        return `
+            <div class="journal-entry">
+                <div class="entry-header">
+                    <div class="entry-emotion">${emotionPath}</div>
+                    <div class="entry-timestamp">${formattedDate} at ${formattedTime}</div>
+                </div>
+                ${entry.note ? `<div class="entry-note">${entry.note}</div>` : ''}
+                <div class="entry-actions">
+                    <button class="entry-edit" onclick="editEntry(${entry.id})">Edit</button>
+                    <button class="entry-delete" onclick="deleteEntry(${entry.id})">Delete</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Insights functionality
+function renderInsights() {
+    renderStreakCard();
+    renderStatsOverview();
+    renderEmotionBreakdown();
+    renderMoodTimeline(7);
+    renderTimeDistribution();
+    renderWeeklyPattern();
+}
+
+function calculateStreak() {
+    if (journalEntries.length === 0) return 0;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let streak = 0;
+    let currentDate = new Date(today);
+    
+    // Check if there's an entry today
+    const hasEntryToday = journalEntries.some(e => {
+        const entryDate = new Date(e.timestamp);
+        entryDate.setHours(0, 0, 0, 0);
+        return entryDate.getTime() === today.getTime();
+    });
+    
+    if (!hasEntryToday) {
+        // Check yesterday
+        currentDate.setDate(currentDate.getDate() - 1);
+    }
+    
+    while (true) {
+        const hasEntry = journalEntries.some(e => {
+            const entryDate = new Date(e.timestamp);
+            entryDate.setHours(0, 0, 0, 0);
+            return entryDate.getTime() === currentDate.getTime();
+        });
+        
+        if (hasEntry) {
+            streak++;
+            currentDate.setDate(currentDate.getDate() - 1);
+        } else {
+            break;
+        }
+    }
+    
+    // Update best streak
+    if (streak > settings.bestStreak) {
+        settings.bestStreak = streak;
+        saveSettings();
+    }
+    
+    return streak;
+}
+
+function renderStreakCard() {
+    const streak = calculateStreak();
+    document.getElementById('current-streak').textContent = streak;
+    document.getElementById('best-streak').textContent = settings.bestStreak;
+}
+
+function renderStatsOverview() {
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    
+    const thisWeek = journalEntries.filter(e => new Date(e.timestamp) >= oneWeekAgo).length;
+    const thisMonth = journalEntries.filter(e => new Date(e.timestamp) >= oneMonthAgo).length;
+    
+    // Calculate days with entries
+    const uniqueDays = new Set(journalEntries.map(e => {
+        const d = new Date(e.timestamp);
+        return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    }));
+    
+    const avgPerDay = uniqueDays.size > 0 ? (journalEntries.length / uniqueDays.size).toFixed(1) : 0;
+    
+    document.getElementById('total-entries').textContent = journalEntries.length;
+    document.getElementById('this-week').textContent = thisWeek;
+    document.getElementById('this-month').textContent = thisMonth;
+    document.getElementById('avg-per-day').textContent = avgPerDay;
+}
+
+function renderEmotionBreakdown() {
+    const container = document.getElementById('emotion-breakdown');
+    
+    // Count emotions
+    const emotionCounts = {};
+    journalEntries.forEach(e => {
+        emotionCounts[e.coreEmotion] = (emotionCounts[e.coreEmotion] || 0) + 1;
+    });
+    
+    const total = journalEntries.length || 1;
+    const sortedEmotions = Object.entries(emotionCounts).sort((a, b) => b[1] - a[1]);
+    
+    if (sortedEmotions.length === 0) {
+        container.innerHTML = '<p class="no-entries">No data yet. Start logging your moods!</p>';
+        return;
+    }
+    
+    container.innerHTML = sortedEmotions.map(([emotion, count]) => {
+        const percentage = (count / total * 100).toFixed(0);
+        const color = emotionData[emotion]?.color || '#999';
+        
+        return `
+            <div class="emotion-bar-container">
+                <span class="emotion-bar-label">${emotion}</span>
+                <div class="emotion-bar-wrapper">
+                    <div class="emotion-bar" style="width: ${percentage}%; background-color: ${color};">
+                        <span class="emotion-bar-count">${count}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderMoodTimeline(days) {
+    const container = document.getElementById('mood-timeline');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let html = '';
+    
+    for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        
+        const entries = getEntriesForDate(date);
+        const dayNum = date.getDate();
+        
+        if (entries.length > 0) {
+            // Use the most common core emotion for that day
+            const emotionCounts = {};
+            entries.forEach(e => {
+                emotionCounts[e.coreEmotion] = (emotionCounts[e.coreEmotion] || 0) + 1;
+            });
+            const topEmotion = Object.entries(emotionCounts).sort((a, b) => b[1] - a[1])[0][0];
+            const color = emotionData[topEmotion]?.color || '#999';
+            
+            html += `<div class="timeline-day" style="background-color: ${color};" title="${date.toDateString()}: ${entries.length} entries (${topEmotion})">${dayNum}</div>`;
+        } else {
+            html += `<div class="timeline-day empty" title="${date.toDateString()}: No entries">${dayNum}</div>`;
+        }
+    }
+    
+    container.innerHTML = html;
+}
+
+function renderTimeDistribution() {
+    const container = document.getElementById('time-distribution');
+    
+    const timeSlots = {
+        'Morning': { count: 0, range: '6AM-12PM' },
+        'Afternoon': { count: 0, range: '12PM-6PM' },
+        'Evening': { count: 0, range: '6PM-10PM' },
+        'Night': { count: 0, range: '10PM-6AM' }
+    };
+    
+    journalEntries.forEach(e => {
+        const hour = new Date(e.timestamp).getHours();
+        if (hour >= 6 && hour < 12) timeSlots['Morning'].count++;
+        else if (hour >= 12 && hour < 18) timeSlots['Afternoon'].count++;
+        else if (hour >= 18 && hour < 22) timeSlots['Evening'].count++;
+        else timeSlots['Night'].count++;
+    });
+    
+    const maxCount = Math.max(...Object.values(timeSlots).map(s => s.count), 1);
+    
+    container.innerHTML = Object.entries(timeSlots).map(([name, data]) => {
+        const height = (data.count / maxCount) * 100;
+        return `
+            <div class="time-slot">
+                <div class="time-bar" style="height: ${height}px;" title="${data.count} entries"></div>
+                <span class="time-label">${name}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderWeeklyPattern() {
+    const container = document.getElementById('weekly-pattern');
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+    
+    journalEntries.forEach(e => {
+        const day = new Date(e.timestamp).getDay();
+        dayCounts[day]++;
+    });
+    
+    const maxCount = Math.max(...dayCounts, 1);
+    
+    container.innerHTML = days.map((day, index) => {
+        const height = (dayCounts[index] / maxCount) * 80;
+        return `
+            <div class="day-column">
+                <span class="day-count">${dayCounts[index]}</span>
+                <div class="day-bar" style="height: ${height}px;"></div>
+                <span class="day-label">${day}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+// Settings functionality
+function loadSettings() {
+    const stored = localStorage.getItem('moodJournalSettings');
+    if (stored) {
+        settings = { ...settings, ...JSON.parse(stored) };
+    }
+}
+
+function saveSettings() {
+    localStorage.setItem('moodJournalSettings', JSON.stringify(settings));
+}
+
+function applySettings() {
+    // Apply dark mode
+    if (settings.darkMode) {
+        document.body.classList.add('dark-mode');
+        document.getElementById('dark-mode-toggle').checked = true;
+    }
+    
+    // Apply reminder settings
+    document.getElementById('reminder-toggle').checked = settings.reminderEnabled;
+    document.getElementById('reminder-time').value = settings.reminderTime;
+    
+    // Apply quick entry setting
+    document.getElementById('quick-entry-toggle').checked = settings.quickEntryEnabled;
+}
+
+function toggleDarkMode() {
+    settings.darkMode = document.getElementById('dark-mode-toggle').checked;
+    document.body.classList.toggle('dark-mode', settings.darkMode);
+    saveSettings();
+    showToast('Theme updated', 'success');
+}
+
+function toggleReminder() {
+    settings.reminderEnabled = document.getElementById('reminder-toggle').checked;
+    saveSettings();
+    
+    if (settings.reminderEnabled) {
+        requestNotificationPermission();
+        showToast('Daily reminder enabled', 'success');
+    } else {
+        showToast('Daily reminder disabled', 'info');
+    }
+}
+
+function updateReminderTime() {
+    settings.reminderTime = document.getElementById('reminder-time').value;
+    saveSettings();
+    showToast('Reminder time updated', 'success');
+}
+
+function toggleQuickEntry() {
+    settings.quickEntryEnabled = document.getElementById('quick-entry-toggle').checked;
+    saveSettings();
+    showToast(settings.quickEntryEnabled ? 'Quick entry enabled' : 'Quick entry disabled', 'success');
+}
+
+function requestNotificationPermission() {
+    if ('Notification' in window) {
+        Notification.requestPermission();
+    }
+}
+
+function checkDailyReminder() {
+    if (!settings.reminderEnabled) return;
+    
+    const now = new Date();
+    const [hours, minutes] = settings.reminderTime.split(':').map(Number);
+    
+    const reminderTime = new Date();
+    reminderTime.setHours(hours, minutes, 0, 0);
+    
+    // If reminder time has passed today, schedule for tomorrow
+    if (now > reminderTime) {
+        reminderTime.setDate(reminderTime.getDate() + 1);
+    }
+    
+    const delay = reminderTime.getTime() - now.getTime();
+    
+    setTimeout(() => {
+        showReminderNotification();
+        // Schedule next reminder
+        checkDailyReminder();
+    }, delay);
+}
+
+function showReminderNotification() {
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Mood Journal', {
+            body: 'How are you feeling today? Take a moment to log your mood.',
+            icon: 'icon-192.png'
+        });
+    }
+}
+
+// Data export/import
+function exportData() {
+    const data = {
+        entries: journalEntries,
+        settings: settings,
+        exportDate: new Date().toISOString(),
+        version: '1.0.0'
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mood-journal-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    
+    URL.revokeObjectURL(url);
+    showToast('Data exported successfully', 'success');
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            if (data.entries && Array.isArray(data.entries)) {
+                if (confirm(`Import ${data.entries.length} entries? This will merge with existing data.`)) {
+                    // Merge entries (avoid duplicates by ID)
+                    const existingIds = new Set(journalEntries.map(e => e.id));
+                    const newEntries = data.entries.filter(e => !existingIds.has(e.id));
+                    journalEntries = [...journalEntries, ...newEntries];
+                    journalEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    saveJournalEntries();
+                    
+                    renderCalendar();
+                    showToast(`Imported ${newEntries.length} new entries`, 'success');
+                }
+            } else {
+                throw new Error('Invalid data format');
+            }
+        } catch (error) {
+            showToast('Error importing data: Invalid file format', 'error');
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // Reset file input
+}
+
+function clearAllData() {
+    if (confirm('Are you sure you want to delete ALL data including settings? This cannot be undone.')) {
+        journalEntries = [];
+        settings = {
+            darkMode: false,
+            reminderEnabled: false,
+            reminderTime: '20:00',
+            quickEntryEnabled: false,
+            onboardingComplete: true,
+            bestStreak: 0
+        };
+        
+        localStorage.removeItem('moodJournalEntries');
+        localStorage.removeItem('moodJournalSettings');
+        
+        saveJournalEntries();
+        saveSettings();
+        
+        location.reload();
+    }
+}
+
+// Onboarding
+function showOnboarding() {
+    document.getElementById('onboarding-modal').classList.remove('hidden');
+}
+
+function nextOnboardingSlide() {
+    if (currentOnboardingSlide < 4) {
+        currentOnboardingSlide++;
+        goToOnboardingSlide(currentOnboardingSlide);
+    }
+}
+
+function goToOnboardingSlide(slideNum) {
+    currentOnboardingSlide = slideNum;
+    
+    document.querySelectorAll('.onboarding-slide').forEach(slide => {
+        slide.classList.remove('active');
+    });
+    document.querySelector(`.onboarding-slide[data-slide="${slideNum}"]`).classList.add('active');
+    
+    document.querySelectorAll('.onboarding-dots .dot').forEach(dot => {
+        dot.classList.remove('active');
+    });
+    document.querySelector(`.dot[data-slide="${slideNum}"]`).classList.add('active');
+    
+    // Show/hide buttons
+    if (slideNum === 4) {
+        document.getElementById('next-onboarding').classList.add('hidden');
+        document.getElementById('finish-onboarding').classList.remove('hidden');
+    } else {
+        document.getElementById('next-onboarding').classList.remove('hidden');
+        document.getElementById('finish-onboarding').classList.add('hidden');
+    }
+}
+
+function finishOnboarding() {
+    settings.onboardingComplete = true;
+    saveSettings();
+    document.getElementById('onboarding-modal').classList.add('hidden');
+    showToast('Welcome to Mood Journal! 🎉', 'success');
+}
+
+// Toast notifications
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <span>${type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ'}</span>
+        <span>${message}</span>
+    `;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 // Initialize on page load

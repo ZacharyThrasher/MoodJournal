@@ -675,3 +675,740 @@ h1 {
 #entries-container::-webkit-scrollbar-thumb:hover {
     background: #764ba2;
 }
+
+/* Search & Filter Styles */
+.search-filter-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.search-box {
+    display: flex;
+    gap: 5px;
+}
+
+.search-box input {
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    min-width: 200px;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.filter-box select {
+    padding: 10px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: white;
+    cursor: pointer;
+}
+
+.filter-box select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.btn-small {
+    padding: 10px 15px;
+    font-size: 1rem;
+}
+
+/* Insights Page Styles */
+.insights-container {
+    display: grid;
+    gap: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.insight-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.insight-card h3 {
+    color: #667eea;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+}
+
+/* Streak Card */
+.streak-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.streak-icon {
+    font-size: 3rem;
+}
+
+.streak-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.streak-number {
+    font-size: 3rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.streak-label {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.streak-best {
+    margin-left: auto;
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+/* Stats Overview */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Emotion Breakdown */
+#emotion-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.emotion-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.emotion-bar-label {
+    width: 80px;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.emotion-bar-wrapper {
+    flex: 1;
+    height: 24px;
+    background: #e9ecef;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.emotion-bar {
+    height: 100%;
+    border-radius: 12px;
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+}
+
+.emotion-bar-count {
+    color: white;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Time Range Selector */
+.time-range-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.time-btn {
+    padding: 8px 16px;
+    border: 2px solid #667eea;
+    background: white;
+    color: #667eea;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.time-btn.active,
+.time-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+/* Mood Timeline */
+#mood-timeline {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.timeline-day {
+    width: 30px;
+    height: 30px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.timeline-day:hover {
+    transform: scale(1.2);
+}
+
+.timeline-day.empty {
+    background: #e9ecef;
+    color: #999;
+}
+
+/* Time Distribution */
+#time-distribution {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    height: 150px;
+    padding-top: 20px;
+}
+
+.time-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.time-bar {
+    width: 40px;
+    background: linear-gradient(to top, #667eea, #764ba2);
+    border-radius: 5px 5px 0 0;
+    transition: height 0.5s ease;
+}
+
+.time-label {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+/* Weekly Pattern */
+#weekly-pattern {
+    display: flex;
+    justify-content: space-around;
+}
+
+.day-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.day-label {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.day-count {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.day-bar {
+    width: 30px;
+    background: linear-gradient(to top, #667eea, #764ba2);
+    border-radius: 5px;
+    transition: height 0.5s ease;
+}
+
+/* Settings Page Styles */
+.settings-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.settings-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.settings-section h3 {
+    color: #667eea;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-label {
+    font-weight: 500;
+    color: #333;
+}
+
+.setting-description {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 10px;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 26px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
+
+/* Data Buttons */
+.data-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.about-info {
+    text-align: center;
+    color: #666;
+}
+
+.about-info p {
+    margin: 5px 0;
+}
+
+.about-description {
+    margin-top: 15px !important;
+    line-height: 1.6;
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Onboarding Styles */
+.onboarding {
+    text-align: center;
+}
+
+.onboarding-slide {
+    display: none;
+}
+
+.onboarding-slide.active {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+
+.onboarding-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.onboarding h2 {
+    color: #667eea;
+    margin-bottom: 15px;
+}
+
+.onboarding p {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.onboarding-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.onboarding-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ddd;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.dot.active {
+    background: #667eea;
+}
+
+.onboarding-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* Toast Notifications */
+#toast-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 3000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    background: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease;
+}
+
+.toast.success {
+    border-left: 4px solid #27ae60;
+}
+
+.toast.error {
+    border-left: 4px solid #e74c3c;
+}
+
+.toast.info {
+    border-left: 4px solid #3498db;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Dark Mode */
+body.dark-mode {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+body.dark-mode .container h1 {
+    color: #e0e0e0;
+}
+
+body.dark-mode .subtitle {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+body.dark-mode #wheel-container {
+    background: #2d2d44;
+}
+
+body.dark-mode .insight-card,
+body.dark-mode .settings-section,
+body.dark-mode #journal-history,
+body.dark-mode #journal-form,
+body.dark-mode .nav-menu,
+body.dark-mode .modal-content {
+    background: #2d2d44;
+}
+
+body.dark-mode .insight-card h3,
+body.dark-mode .settings-section h3,
+body.dark-mode #journal-form h2 {
+    color: #a8a8ff;
+}
+
+body.dark-mode .stat-item {
+    background: #3d3d5c;
+}
+
+body.dark-mode .stat-label,
+body.dark-mode .setting-description {
+    color: #aaa;
+}
+
+body.dark-mode .setting-label,
+body.dark-mode .entry-emotion,
+body.dark-mode .day-count {
+    color: #e0e0e0;
+}
+
+body.dark-mode .journal-entry {
+    background: #3d3d5c;
+}
+
+body.dark-mode .entry-note {
+    background: #2d2d44;
+    color: #ccc;
+}
+
+body.dark-mode .calendar-day {
+    background: #3d3d5c;
+    border-color: #4d4d6c;
+    color: #e0e0e0;
+}
+
+body.dark-mode .calendar-day.other-month {
+    background: #2d2d44;
+}
+
+body.dark-mode .calendar-day.has-entries {
+    background: #3d5a5c;
+}
+
+body.dark-mode .nav-item {
+    color: #e0e0e0;
+}
+
+body.dark-mode .nav-item:hover {
+    background: #3d3d5c;
+}
+
+body.dark-mode .search-box input,
+body.dark-mode .filter-box select,
+body.dark-mode #reminder-time,
+body.dark-mode #journal-note {
+    background: #3d3d5c;
+    border-color: #4d4d6c;
+    color: #e0e0e0;
+}
+
+body.dark-mode .emotion-text {
+    fill: #e0e0e0;
+}
+
+body.dark-mode .setting-item {
+    border-color: #4d4d6c;
+}
+
+body.dark-mode .toast {
+    background: #3d3d5c;
+    color: #e0e0e0;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .streak-card {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .streak-best {
+        margin-left: 0;
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .calendar-day {
+        min-height: 50px;
+    }
+    
+    .day-number {
+        font-size: 0.9rem;
+    }
+    
+    .emotion-dot {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .entry-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .search-filter-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-box {
+        width: 100%;
+    }
+    
+    .search-box input {
+        flex: 1;
+        min-width: unset;
+    }
+    
+    #time-distribution {
+        height: 100px;
+    }
+    
+    .time-bar {
+        width: 25px;
+    }
+    
+    .data-buttons {
+        flex-direction: column;
+    }
+    
+    .data-buttons .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    #wheel-container {
+        padding: 10px;
+    }
+    
+    .insight-card,
+    .settings-section,
+    #journal-history,
+    #journal-form {
+        padding: 15px;
+    }
+    
+    .datetime-inputs {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .form-buttons {
+        flex-direction: column;
+    }
+    
+    .form-buttons .btn {
+        width: 100%;
+    }
+}
