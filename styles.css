@@ -1303,6 +1303,22 @@ body.dark-mode .toast {
     color: #e0e0e0;
 }
 
+body.dark-mode .emotion-text {
+    fill: #222;
+}
+
+body.dark-mode .core-emotion-text {
+    fill: #111;
+}
+
+body.dark-mode .secondary-emotion-text {
+    fill: #222;
+}
+
+body.dark-mode .tertiary-emotion-text {
+    fill: #333;
+}
+
 /* Responsive Styles */
 @media (max-width: 768px) {
     h1 {
